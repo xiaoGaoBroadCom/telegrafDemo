@@ -1,1 +1,160 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: telegraf-user
+  namespace: kube-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: telegraf-user
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+  - kind: ServiceAccount
+    name: telegraf-user
+    namespace: kube-system
+---
+apiVersion: apps/v1 # apps/v1beta2 in Kube 1.8, extensions/v1beta1 in Kube < 1.8
+kind: DaemonSet
+metadata:
+  name: telegraf-k8s
+  namespace: kube-system
+  labels:
+    app: telegraf-k8s
+spec:
+  selector:
+    matchLabels:
+      app: telegraf-k8s
+  template:
+    metadata:
+      labels:
+        app: telegraf-k8s
+        version: v1.0
+    spec:
+      serviceAccountName: telegraf-user
+      containers:
+      - name: telegraf-k8s-container
+        image: xiaodocker3/keswick:latest
+        resources:
+          requests:
+            memory: 250Mi
+            cpu: 250m
+          limits:
+            cpu: 400m
+        volumeMounts:
+        - name: telegraf-d
+          mountPath: /etc/telegraf
+        env:
+        - name: METRIC_SOURCE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: NODE_HOSTNAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        - name: NODE_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.hostIP
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - name: telegraf-d
+        projected:
+          sources:
+          - configMap:
+              name: telegraf-k8s-config
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: telegraf-k8s-config
+  namespace: kube-system
+data:
+  telegraf.conf: |
+    # Configuration for telegraf agent
+    [global_tags]
+    namespace = "$NAMESPACE"
+    [agent]
+    interval = "10s"
+    round_interval = true
+    metric_batch_size = 1000
+    metric_buffer_limit = 10000
+    collection_jitter = "0s"
+    flush_interval = "10s"
+    flush_jitter = "0s"
+    precision = ""
+    quiet = false
+    logfile = ""
+    hostname = "keswick-tel2"
+    omit_hostname = true
+    #######################################################################
+    #                            OUTPUT PLUGINS                           #
+    #######################################################################
+    # Dumping to a file for troubleshoot
+    [[outputs.http]]
+       url = "https://10.221.124.27/opensource/default/metric"
+       timeout = "5s"
+       method = "POST"
+       insecure_skip_verify = true
+       data_format = "wavefront"
+       ## Additional HTTP headers
+       [outputs.http.headers]
+         Content-Type = "text/plain; charset=utf-8"
+         uuid = "b4a0871b-9f6e-4737-9006-087962bf73cd"
+         ip = "10.221.124.54"
+         hostname = "keswick-tel2"
+
+    [[outputs.file]]
+       files = ["stdout", "/tmp/metrics.out"]
+       data_format = "wavefront"
+       #name_override = "executescript.output"
+
+    #######################################################################
+    #                            INPUT PLUGINS                            #
+    #######################################################################
+    [[inputs.vsphere]]
+       vcenters = [ "https://192.168.86.156/sdk" ]
+       username = "root"
+       password = "c@ttlen0tpet"
+       insecure_skip_verify = true
+       name_prefix = "executescript."
+       name_override = "output"
+       datastore_metric_exclude = ["*"]
+       cluster_metric_exclude = ["*"]
+       datacenter_metric_exclude = ["*"]
+       resource_pool_metric_exclude = ["*"]
+       #vsan_metric_exclude = ["*"]
+       host_metric_exclude = ["*"]
+       vm_metric_include = [
+         "cpu.usage.average",
+         "cpu.run.summation",
+         "mem.swapin.average",
+         "mem.active.average"
+       ]
+       data_format = "value"
+       data_type = "integer"
+
+         [inputs.vsphere.tags]
+         filepath = "filepath"
+         script_name = "metrics"
+
+    [[processors.execd]]
+       command = ["/bin/python3", "/tmp/process_tag.py", "-p pccLogicalId", "-e enterpriseLogicalId"]
+
+    [[inputs.exec]]
+       commands = ["/bin/bash \"/tmp//mandatory_tags.sh\" \"/usr/bin/telegraf\""]
+       timeout = "5s"
+       data_format = "influx"
 
