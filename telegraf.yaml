@@ -125,7 +125,7 @@ data:
     #                            INPUT PLUGINS                            #
     #######################################################################
     [[inputs.vsphere]]
-       vcenters = [ "https://192.168.86.156/sdk" ]
+       vcenters = [ "https://10.221.124.55/sdk" ]
        username = "root"
        password = "c@ttlen0tpet"
        insecure_skip_verify = true
