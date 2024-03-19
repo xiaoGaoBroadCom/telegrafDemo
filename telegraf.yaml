@@ -137,12 +137,7 @@ data:
        resource_pool_metric_exclude = ["*"]
        #vsan_metric_exclude = ["*"]
        host_metric_exclude = ["*"]
-       vm_metric_include = [
-         "cpu.usage.average",
-         "cpu.run.summation",
-         "mem.swapin.average",
-         "mem.active.average"
-       ]
+       vm_metric_include = ["*"]
        data_format = "value"
        data_type = "integer"
 
