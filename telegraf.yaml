@@ -146,7 +146,7 @@ data:
          script_name = "metrics"
 
     [[processors.execd]]
-       command = ["/bin/python3", "/tmp/process_tag.py", "-p pccLogicalId", "-e enterpriseLogicalId"]
+       command = ["/bin/python3", "/tmp/process_tag.py", "-p LogicalId", "-e enterpriseLogicalId"]
 
     [[inputs.exec]]
        commands = ["/bin/bash \"/tmp//mandatory_tags.sh\" \"/usr/bin/telegraf\""]
