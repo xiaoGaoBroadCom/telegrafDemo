@@ -13,9 +13,9 @@ spec:
   networkInterfaces:
   - networkName: "VM Network"
     ethernetCardType: "vmxnet3"
-  instanceStorage:
-      volumes:
-      - size: 30Gi
+  vSphereVolume:
+      properties:
+        capacity: 30Gi
   vmMetadata:
     configMapName: user-data-photon3
     transport: CloudInit
