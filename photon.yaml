@@ -13,9 +13,10 @@ spec:
   networkInterfaces:
   - networkName: "VM Network"
     ethernetCardType: "vmxnet3"
-  vSphereVolume:
-      properties:
-        capacity: 30Gi
+  volumes:
+  - name: my-centos-vol
+    persistentVolumeClaim:
+      claimName: pvc1
   vmMetadata:
     configMapName: user-data-photon3
     transport: CloudInit
