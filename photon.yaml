@@ -1,4 +1,18 @@
 apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv1 
+spec:
+  capacity:
+    storage: 1Gi 
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  vsphereVolume: 
+    volumePath: "[datastore1] volumes/test"  
+    fsType: ext4  
+---
+apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: pvc1 
@@ -10,28 +24,6 @@ spec:
    requests:
      storage: "500M" 
   volumeName: pv1 
----
-apiVersion: vmoperator.vmware.com/v1alpha1
-kind: VirtualMachine
-metadata:
-  name: whatever
-  namespace: default
-  annotations:
-    vmoperator.vmware.com/image-supported-check: disable
-spec:
-  className: best-effort-small
-  imageName: packages.vmware.com/photon/4.0/GA/ova/photon-hw11-4.0-1526e30ba0.ova
-  powerState: poweredOn
-  networkInterfaces:
-  - networkName: "VM Network"
-    ethernetCardType: "vmxnet3"
-  volumes:
-  - name: my-centos-vol
-    persistentVolumeClaim:
-      claimName: pvc1
-  vmMetadata:
-    configMapName: user-data-photon3
-    transport: CloudInit
 ---
 apiVersion: vmoperator.vmware.com/v1alpha1
 kind: VirtualMachine
