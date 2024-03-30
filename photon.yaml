@@ -64,7 +64,7 @@ spec:
 apiVersion: vmoperator.vmware.com/v1alpha1
 kind: VirtualMachine
 metadata:
-  name: xiao
+  name: test
   namespace: default
   annotations:
     vmoperator.vmware.com/image-supported-check: disable
