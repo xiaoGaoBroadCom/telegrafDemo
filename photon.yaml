@@ -28,24 +28,6 @@ spec:
 apiVersion: vmoperator.vmware.com/v1alpha1
 kind: VirtualMachine
 metadata:
-  name: test2
-  namespace: default
-  annotations:
-    vmoperator.vmware.com/image-supported-check: disable
-spec:
-  className: best-effort-small
-  imageName: packages.vmware.com/photon/4.0/GA/ova/photon-hw11-4.0-1526e30ba0.ova
-  powerState: poweredOn
-  networkInterfaces:
-  - networkName: "test2"
-    ethernetCardType: "vmxnet3"
-  vmMetadata:
-    configMapName: user-data-photon3
-    transport: CloudInit
----
-apiVersion: vmoperator.vmware.com/v1alpha1
-kind: VirtualMachine
-metadata:
   name: test-vm
   namespace: default
   annotations:
